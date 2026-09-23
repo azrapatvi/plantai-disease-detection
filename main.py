@@ -4,17 +4,37 @@ from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 import numpy as np
 import requests
+import threading
+from contextlib import asynccontextmanager
 from tensorflow.keras.models import load_model
 
-app = FastAPI()
+model = None
+_lock = threading.Lock()
 
-model = load_model("plant_disease_classification.keras")
+
+def get_model():
+    global model
+    if model is None:
+        with _lock:  # stops double-loading if two requests hit at once
+            if model is None:
+                model = load_model("plant_disease_classification.keras")
+    return model
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # load in background so the port binds instantly
+    threading.Thread(target=get_model, daemon=True).start()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 templates = Jinja2Templates(directory="templates")
 
 class_names = ["Healthy", "Powdery", "Rust"]
 
 MAX_SIZE = 10 * 1024 * 1024  # 10 MB
-HEADERS = {"User-Agent": "Mozilla/5.0 (PlantAI Bot)"}  # some sites block requests without this
+HEADERS = {"User-Agent": "Mozilla/5.0 (PlantAI Bot)"}
 
 
 def render(request: Request, **context):
@@ -80,7 +100,7 @@ async def predict(
         img_array = np.array(img, dtype="float32") / 255.0
         img_array = img_array.reshape(1, 225, 225, 3)
 
-        pred = model.predict(img_array, verbose=0)
+        pred = get_model().predict(img_array, verbose=0)
 
         predicted_class = class_names[int(np.argmax(pred))]
         confidence = float(np.max(pred)) * 100
