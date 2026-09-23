@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PlantAI | Plant Disease Detection</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f7fbf8;
+            color: #16382a;
+        }
+
+        /* =========================
+           NAVBAR
+        ========================= */
+
+        nav {
+            height: 72px;
+            background: #ffffff;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 8%;
+
+            border-bottom: 1px solid #e8f0eb;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 700;
+            color: #237b4b;
+        }
+
+        .logo span {
+            color: #16382a;
+        }
+
+        .nav-text {
+            font-size: 14px;
+            color: #718078;
+        }
+
+
+        /* =========================
+           HERO
+        ========================= */
+
+        .hero {
+            text-align: center;
+            padding: 75px 20px 45px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1.15;
+            color: #16382a;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 span {
+            color: #2b995d;
+        }
+
+        .hero p {
+            max-width: 650px;
+            margin: auto;
+            font-size: 17px;
+            line-height: 1.7;
+            color: #718078;
+        }
+
+
+        /* =========================
+           MAIN CONTAINER
+        ========================= */
+
+        .main-container {
+            width: 90%;
+            max-width: 850px;
+            margin: auto;
+            padding-bottom: 70px;
+        }
+
+
+        /* =========================
+           MAIN CARD
+        ========================= */
+
+        .prediction-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 40px;
+
+            box-shadow:
+                0 15px 45px rgba(38, 95, 61, 0.10);
+
+            border: 1px solid #edf3ef;
+        }
+
+        .card-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: #7b8981;
+            margin-bottom: 28px;
+        }
+
+
+        /* =========================
+           UPLOAD AREA
+        ========================= */
+
+        .upload-area {
+            display: block;
+
+            border: 2px dashed #b7dcc5;
+            border-radius: 18px;
+
+            background: #f8fcf9;
+
+            padding: 38px 20px;
+
+            text-align: center;
+
+            cursor: pointer;
+
+            transition: all 0.25s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #2b995d;
+            background: #f2faf5;
+        }
+
+        .upload-icon {
+            width: 62px;
+            height: 62px;
+
+            margin: 0 auto 15px;
+
+            border-radius: 50%;
+
+            background: #e5f5eb;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 27px;
+        }
+
+        .upload-area h3 {
+            font-size: 17px;
+            margin-bottom: 8px;
+        }
+
+        .upload-area p {
+            color: #829087;
+            font-size: 13px;
+            margin-bottom: 17px;
+        }
+
+        .browse-btn {
+            display: inline-block;
+
+            background: #2b995d;
+            color: white;
+
+            padding: 11px 23px;
+
+            border-radius: 9px;
+
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+
+        /* =========================
+           SELECTED FILE
+        ========================= */
+
+        .selected-file {
+            display: none;
+
+            margin-top: 12px;
+
+            text-align: center;
+
+            font-size: 13px;
+
+            color: #527060;
+        }
+
+
+        /* =========================
+           DIVIDER
+        ========================= */
+
+        .divider {
+            display: flex;
+            align-items: center;
+
+            gap: 15px;
+
+            margin: 28px 0;
+        }
+
+        .divider-line {
+            height: 1px;
+            background: #e1ebe5;
+            flex: 1;
+        }
+
+        .divider-text {
+            color: #98a49e;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+
+        /* =========================
+           URL SECTION
+        ========================= */
+
+        .url-section {
+            margin-top: 5px;
+        }
+
+        .url-label {
+            display: block;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            margin-bottom: 9px;
+        }
+
+        .url-input {
+            width: 100%;
+            height: 50px;
+
+            border: 1px solid #d9e5dd;
+
+            border-radius: 10px;
+
+            padding: 0 16px;
+
+            font-size: 14px;
+
+            outline: none;
+
+            color: #304d3d;
+
+            transition: 0.2s;
+        }
+
+        .url-input:focus {
+            border-color: #2b995d;
+
+            box-shadow:
+                0 0 0 3px rgba(43, 153, 93, 0.08);
+        }
+
+        .url-input::placeholder {
+            color: #a1aca6;
+        }
+
+        .url-note {
+            font-size: 12px;
+
+            color: #89968f;
+
+            margin-top: 8px;
+        }
+
+
+        /* =========================
+           PREVIEW
+        ========================= */
+
+        .preview {
+            display: none;
+
+            margin-top: 25px;
+
+            text-align: center;
+        }
+
+        .preview-title {
+            font-size: 14px;
+            font-weight: 600;
+
+            margin-bottom: 12px;
+        }
+
+        .preview img {
+            width: 100%;
+            max-width: 350px;
+            max-height: 300px;
+
+            object-fit: contain;
+
+            border-radius: 15px;
+
+            border: 1px solid #dce8e0;
+
+            padding: 5px;
+
+            background: white;
+        }
+
+
+        /* =========================
+           BUTTON
+        ========================= */
+
+        .predict-button {
+            width: 100%;
+            height: 52px;
+
+            margin-top: 28px;
+
+            border: none;
+
+            border-radius: 11px;
+
+            background: #2b995d;
+
+            color: white;
+
+            font-size: 15px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: all 0.25s ease;
+        }
+
+        .predict-button:hover {
+            background: #217d4b;
+
+            transform: translateY(-1px);
+        }
+
+
+        /* =========================
+           ERROR
+        ========================= */
+
+        .error {
+            margin-top: 20px;
+
+            padding: 13px 15px;
+
+            border-radius: 10px;
+
+            background: #fff4f3;
+
+            border: 1px solid #f1d0cc;
+
+            color: #c0392b;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           RESULT
+        ========================= */
+
+        .result {
+            margin-top: 30px;
+
+            padding: 28px;
+
+            background: #f0f9f3;
+
+            border: 1px solid #cfe8d7;
+
+            border-radius: 17px;
+
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: #708078;
+
+            margin-bottom: 8px;
+        }
+
+        .result-class {
+            font-size: 30px;
+
+            font-weight: 700;
+
+            color: #217b4a;
+
+            margin-bottom: 18px;
+        }
+
+        .confidence-text {
+            font-size: 14px;
+            color: #617168;
+        }
+
+        .confidence-text strong {
+            color: #16382a;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 9px;
+
+            background: #d8e9dd;
+
+            border-radius: 20px;
+
+            margin-top: 10px;
+
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+
+            width: {{ confidence | default(0) }}%;
+
+            background: #2b995d;
+
+            border-radius: 20px;
+        }
+
+        .file-name {
+            margin-top: 15px;
+
+            font-size: 12px;
+
+            color: #819087;
+
+            word-break: break-word;
+        }
+
+
+        /* =========================
+           INFORMATION CARDS
+        ========================= */
+
+        .info-grid {
+            display: grid;
+
+            grid-template-columns: repeat(3, 1fr);
+
+            gap: 18px;
+
+            margin-top: 22px;
+        }
+
+        .info-card {
+            background: #ffffff;
+
+            border: 1px solid #edf2ee;
+
+            border-radius: 15px;
+
+            padding: 22px;
+
+            box-shadow:
+                0 5px 20px rgba(38, 95, 61, 0.05);
+        }
+
+        .info-card h3 {
+            font-size: 15px;
+
+            margin-bottom: 9px;
+
+            color: #267e4c;
+        }
+
+        .info-card p {
+            font-size: 13px;
+
+            line-height: 1.55;
+
+            color: #7c8982;
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            text-align: center;
+
+            padding: 25px;
+
+            font-size: 13px;
+
+            color: #8b9791;
+
+            border-top: 1px solid #e7eee9;
+
+            background: white;
+        }
+
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            .hero {
+                padding-top: 50px;
+            }
+
+            .hero h1 {
+                font-size: 35px;
+            }
+
+            .hero p {
+                font-size: 15px;
+            }
+
+            .prediction-card {
+                padding: 25px 20px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-text {
+                display: none;
+            }
+
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+    <!-- =========================
+         NAVBAR
+    ========================= -->
+
+    <nav>
+
+        <div class="logo">
+            🌿 Plant<span>AI</span>
+        </div>
+
+        <div class="nav-text">
+            AI-Powered Plant Disease Detection
+        </div>
+
+    </nav>
+
+
+    <!-- =========================
+         HERO
+    ========================= -->
+
+    <section class="hero">
+
+        <h1>
+            Understand Your Plant's
+            <span>Health with AI</span>
+        </h1>
+
+        <p>
+            Upload a plant image or provide an image URL.
+            Our deep learning model analyzes the image
+            and predicts the plant's health condition.
+        </p>
+
+    </section>
+
+
+    <!-- =========================
+         MAIN
+    ========================= -->
+
+    <main class="main-container">
+
+
+        <div class="prediction-card">
+
+
+            <div class="card-title">
+                Analyze Your Plant
+            </div>
+
+            <div class="card-subtitle">
+                Upload an image from your device or paste an image URL below.
+            </div>
+
+
+            <!-- =========================
+                 FORM
+            ========================= -->
+
+            <form
+                action="/predict"
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+
+                <!-- =========================
+                     UPLOAD IMAGE
+                ========================= -->
+
+                <label
+                    for="fileInput"
+                    class="upload-area"
+                >
+
+                    <div class="upload-icon">
+                        📷
+                    </div>
+
+                    <h3>
+                        Upload Plant Image
+                    </h3>
+
+                    <p>
+                        JPG, JPEG or PNG images
+                    </p>
+
+                    <span class="browse-btn">
+                        Browse Image
+                    </span>
+
+                    <input
+                        type="file"
+                        id="fileInput"
+                        name="file"
+                        accept="image/*"
+                    >
+
+                </label>
+
+
+                <!-- SELECTED FILE -->
+
+                <div
+                    class="selected-file"
+                    id="selectedFile"
+                ></div>
+
+
+                <!-- =========================
+                     OR
+                ========================= -->
+
+                <div class="divider">
+
+                    <div class="divider-line"></div>
+
+                    <div class="divider-text">
+                        OR
+                    </div>
+
+                    <div class="divider-line"></div>
+
+                </div>
+
+
+                <!-- =========================
+                     IMAGE URL
+                ========================= -->
+
+                <div class="url-section">
+
+                    <label
+                        for="urlInput"
+                        class="url-label"
+                    >
+                        Use Image URL
+                    </label>
+
+                    <input
+                        type="url"
+                        id="urlInput"
+                        name="image_url"
+                        class="url-input"
+                        placeholder="https://example.com/plant-image.jpg"
+                    >
+
+                    <div class="url-note">
+                        Enter a direct link to a plant image.
+                    </div>
+
+                </div>
+
+
+                <!-- =========================
+                     IMAGE PREVIEW
+                ========================= -->
+
+                <div
+                    class="preview"
+                    id="preview"
+                >
+
+                    <div class="preview-title">
+                        Image Preview
+                    </div>
+
+                    <img
+                        id="previewImage"
+                        src=""
+                        alt="Plant Preview"
+                    >
+
+                </div>
+
+
+                <!-- =========================
+                     PREDICT BUTTON
+                ========================= -->
+
+                <button
+                    type="submit"
+                    class="predict-button"
+                >
+                    Analyze Plant
+                </button>
+
+
+            </form>
+
+
+            <!-- =========================
+                 ERROR
+            ========================= -->
+
+            {% if error %}
+
+            <div class="error">
+                {{ error }}
+            </div>
+
+            {% endif %}
+
+
+            <!-- =========================
+                 RESULT
+            ========================= -->
+
+            {% if prediction %}
+
+            <div class="result">
+
+                <div class="result-label">
+                    AI Prediction
+                </div>
+
+                <div class="result-class">
+                    {{ prediction }}
+                </div>
+
+                <div class="confidence-text">
+
+                    Model Confidence:
+
+                    <strong>
+                        {{ confidence }}%
+                    </strong>
+
+                </div>
+
+                <div class="confidence-bar">
+
+                    <div class="confidence-fill"></div>
+
+                </div>
+
+
+                {% if filename %}
+
+                <div class="file-name">
+                    {{ filename }}
+                </div>
+
+                {% endif %}
+
+            </div>
+
+            {% endif %}
+
+
+        </div>
+
+
+        <!-- =========================
+             INFORMATION
+        ========================= -->
+
+        <div class="info-grid">
+
+
+            <div class="info-card">
+
+                <h3>
+                    Healthy
+                </h3>
+
+                <p>
+                    The model identifies the plant
+                    as healthy based on visual patterns.
+                </p>
+
+            </div>
+
+
+            <div class="info-card">
+
+                <h3>
+                    Powdery
+                </h3>
+
+                <p>
+                    The model detects visual patterns
+                    associated with powdery mildew.
+                </p>
+
+            </div>
+
+
+            <div class="info-card">
+
+                <h3>
+                    Rust
+                </h3>
+
+                <p>
+                    The model detects visual patterns
+                    associated with rust disease.
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================= -->
+
+    <footer>
+
+        PlantAI · CNN-Based Plant Disease Classification
+
+    </footer>
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================= -->
+
+    <script>
+
+        const fileInput =
+            document.getElementById("fileInput");
+
+        const urlInput =
+            document.getElementById("urlInput");
+
+        const preview =
+            document.getElementById("preview");
+
+        const previewImage =
+            document.getElementById("previewImage");
+
+        const selectedFile =
+            document.getElementById("selectedFile");
+
+
+        /* =========================
+           FILE UPLOAD PREVIEW
+        ========================= */
+
+        fileInput.addEventListener(
+            "change",
+            function () {
+
+                if (fileInput.files.length > 0) {
+
+                    const file =
+                        fileInput.files[0];
+
+                    /*
+                     If user selects a file,
+                     clear the URL field.
+                    */
+
+                    urlInput.value = "";
+
+
+                    /*
+                     Show file name
+                    */
+
+                    selectedFile.style.display =
+                        "block";
+
+                    selectedFile.textContent =
+                        "Selected: " + file.name;
+
+
+                    /*
+                     Create image preview
+                    */
+
+                    const imageURL =
+                        URL.createObjectURL(file);
+
+                    previewImage.src =
+                        imageURL;
+
+                    preview.style.display =
+                        "block";
+
+                }
+
+            }
+        );
+
+
+        /* =========================
+           URL PREVIEW
+        ========================= */
+
+        urlInput.addEventListener(
+            "input",
+            function () {
+
+                const url =
+                    urlInput.value.trim();
+
+
+                if (url !== "") {
+
+                    /*
+                     If URL is entered,
+                     clear uploaded file.
+                    */
+
+                    fileInput.value = "";
+
+                    selectedFile.style.display =
+                        "none";
+
+
+                    /*
+                     Show URL image
+                    */
+
+                    previewImage.src =
+                        url;
+
+                    preview.style.display =
+                        "block";
+
+                }
+
+                else {
+
+                    preview.style.display =
+                        "none";
+
+                }
+
+            }
+        );
+
+
+        /* =========================
+           IMAGE PREVIEW ERROR
+        ========================= */
+
+        previewImage.addEventListener(
+            "error",
+            function () {
+
+                /*
+                 If URL image cannot be
+                 loaded in browser, hide
+                 preview.
+
+                 This does NOT stop the
+                 backend from trying the URL.
+                */
+
+                if (urlInput.value.trim() !== "") {
+
+                    preview.style.display =
+                        "none";
+
+                }
+
+            }
+        );
+
+    </script>
+
+
+</body>
+</html>
